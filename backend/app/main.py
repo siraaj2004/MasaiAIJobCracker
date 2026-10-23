@@ -1,10 +1,10 @@
 """FastAPI app. Run: uvicorn backend.app.main:app --reload --port 8000"""
-import os
+import os, threading
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from .db import DB
-from . import scraper, pipeline, quiz_gen, mistake, revision, coding, interview, dashboard
+from . import scraper, pipeline, quiz_gen, mistake, revision, coding, interview, dashboard, revision_video
 
 app = FastAPI(title="MASAI AI Engineer Job Cracker — Telugu AI Mentor")
 db = DB()
@@ -59,8 +59,33 @@ def submit_quiz(quiz_id: int, body: AnswersIn):
     db.save_attempt(quiz_id, body.answers, result["score"], result)
     scheduled = mistake.schedule_spaced_repetition(db, list(result["weak_concepts"].keys()), result["band"])
     fresh = mistake.fresh_practice_questions({"questions": q["questions"]}, list(result["weak_concepts"].keys()))
+    mv = {"status": "not_needed"}
+    wrong = [d for d in result["detail"] if not d["correct"]]
+    if wrong:
+        by_id = {str(x["id"]): x for x in q["questions"]}
+        for d in wrong:
+            src = by_id.get(str(d["id"]), {})
+            d["question_text"] = src.get("question", d["concept"])
+        lec = db.get_lecture(q["lecture_id"])
+        out_dir = os.path.join("storage", "lecture_%d" % q["lecture_id"])
+        def _render():
+            try:
+                revision_video.render_mistake_video(lec["title"], wrong, out_dir)
+            except Exception:
+                pass  # status endpoint reports only a file that actually exists
+        threading.Thread(target=_render, daemon=True).start()
+        mv = {"status": "rendering", "wrong_count": len(wrong)}
     return {**result, "spaced_revision_scheduled": scheduled, "fresh_practice": fresh,
-            "revision_video_needed": result["score"] < 90}
+            "revision_video_needed": result["score"] < 90, "mistake_video": mv}
+
+@app.get("/quiz/{quiz_id}/mistake-video")
+def mistake_video_status(quiz_id: int):
+    q = db.get_quiz(quiz_id)
+    if not q: raise HTTPException(404, "quiz not found")
+    p = os.path.join("storage", "lecture_%d" % q["lecture_id"], "mistake_revision.mp4")
+    if os.path.exists(p):
+        return {"status": "ready", "video_path": p}
+    return {"status": "not_ready"}
 
 @app.get("/revision/today")
 def revision_today(): return revision.todays_plan(db)
