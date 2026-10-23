@@ -1,0 +1,60 @@
+name: Neural Voice Render
+
+# Manually triggered: re-renders lecture videos with the Microsoft Edge
+# NEURAL Telugu voice (te-IN-MohanNeural) on GitHub's runners, where the
+# voice server is reachable. The render script is neural-only: if the voice
+# server cannot be reached it stops and changes nothing, so a green run
+# means the neural voice was genuinely used.
+# Requires data/app.db in the repo (lecture summaries). Rendered MP4s are
+# uploaded as a downloadable artifact named "neural-voice-videos".
+on:
+  workflow_dispatch:
+    inputs:
+      lecture:
+        description: "Lecture id to render, or 'all'"
+        required: true
+        default: "all"
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check lecture data is present
+        run: |
+          if [ ! -f data/app.db ]; then
+            echo "data/app.db is missing from the repo - the render needs the lecture database."
+            exit 1
+          fi
+          ls -la data/app.db
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install tools
+        run: |
+          pip install edge-tts gtts
+          ffmpeg -version | head -1 || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+
+      - name: Re-render videos with the neural Telugu voice
+        run: |
+          if [ "${{ inputs.lecture }}" = "all" ]; then
+            python scripts/rerender_neural.py
+          else
+            python scripts/rerender_neural.py --only "${{ inputs.lecture }}"
+          fi
+
+      - name: Upload rendered videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: neural-voice-videos
+          path: |
+            storage/lecture_*/lesson.mp4
+            storage/lecture_*/lesson.srt
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: warn
