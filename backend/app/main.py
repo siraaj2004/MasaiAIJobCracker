@@ -74,6 +74,9 @@ def run_code(body: CodeIn): return coding.run_code(body.code)
 @app.post("/coding/submit/{challenge_id}")
 def submit_code(challenge_id: str, body: CodeIn): return coding.submit_challenge(db, challenge_id, body.code)
 
+@app.get("/interview/topics")
+def iv_topics(): return interview.topics()
+
 @app.post("/interview/start/{topic}")
 def iv_start(topic: str): return interview.start(topic)
 
