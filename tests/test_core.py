@@ -47,6 +47,19 @@ class Core(unittest.TestCase):
         st = interview.start("generative-ai"); sid = st["session_id"]
         r = interview.answer(self.db, sid, "Tokenization splits text into tokens, each token has an id from vocabulary")
         self.assertGreater(r["score_out_of_10"], 5); self.assertIn("sample_answer", r)
+    def test_interview_basic_first_then_subject_all_topics(self):
+        tops = interview.topics()
+        self.assertEqual(len(tops), 10)
+        for t in tops:
+            self.assertGreaterEqual(t["basic_count"], 2)
+            self.assertGreaterEqual(t["subject_count"], 3)
+        st = interview.start("sql")
+        self.assertEqual(st["question_kind"], "basic")
+        r1 = interview.answer(self.db, st["session_id"], "SQL is used to query data from a database and retrieve it")
+        self.assertEqual(r1["question_kind"], "basic")
+        self.assertEqual(r1["next_question_kind"], "basic")
+        kinds = [k for k, _ in interview._queue("sql")]
+        self.assertEqual(kinds, ["basic", "basic", "subject", "subject", "subject", "subject", "subject"])
     def test_dashboard_from_real_data_only(self):
         d = dashboard.compute(self.db)
         self.assertEqual(d["overall_job_readiness"], 0.0)
