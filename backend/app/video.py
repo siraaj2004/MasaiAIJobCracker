@@ -17,14 +17,35 @@ def _run(cmd):
         raise VideoRenderError("command failed: %s\n%s" % (" ".join(cmd[:4]), r.stderr[-800:]))
     return r
 
+def _gtts(text, mp3_path):
+    try:
+        from gtts import gTTS
+    except ImportError:
+        raise VideoRenderError("gTTS not installed — script retained for retry")
+    gTTS(text=text, lang="te").save(mp3_path)
+
+def _edge_tts(text, mp3_path):
+    """Microsoft Edge neural TTS — natural, human-like Telugu voices.
+    Voice via TELUGU_VOICE (default te-IN-MohanNeural, male;
+    te-IN-ShrutiNeural is the female voice). Raises on any failure so the
+    caller can fall back to gTTS."""
+    import sys
+    voice = os.environ.get("TELUGU_VOICE", "te-IN-MohanNeural")
+    r = subprocess.run([sys.executable, "-m", "edge_tts", "--voice", voice,
+                        "--text", text, "--write-media", mp3_path],
+                       capture_output=True, text=True, timeout=600)
+    if r.returncode != 0 or not os.path.exists(mp3_path) or os.path.getsize(mp3_path) == 0:
+        raise VideoRenderError("edge-tts failed: %s" % (r.stderr or "")[-300:])
+
 def synthesize_tts(text, mp3_path, provider=None):
-    provider = provider or os.environ.get("TTS_PROVIDER", "gtts")
-    if provider == "gtts":
+    provider = provider or os.environ.get("TTS_PROVIDER", "edge")
+    if provider == "edge":
         try:
-            from gtts import gTTS
-        except ImportError:
-            raise VideoRenderError("gTTS not installed — script retained for retry")
-        gTTS(text=text, lang="te").save(mp3_path)
+            _edge_tts(text, mp3_path)
+        except Exception:
+            _gtts(text, mp3_path)  # honest fallback: video still renders
+    elif provider == "gtts":
+        _gtts(text, mp3_path)
     elif provider == "none":
         raise VideoRenderError("TTS provider set to 'none' — script retained for retry")
     else:
