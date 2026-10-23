@@ -51,6 +51,14 @@ class Core(unittest.TestCase):
         d = dashboard.compute(self.db)
         self.assertEqual(d["overall_job_readiness"], 0.0)
         self.assertIn("Not a guarantee", d["note"])
+    def test_session_categories_all_three(self):
+        self.assertEqual(scraper.classify_session("Academic Session: Python Basics", ""), "academic")
+        self.assertEqual(scraper.classify_session("IM Session with mentor", ""), "im")
+        self.assertEqual(scraper.classify_session("MasterClass: System Design", ""), "masterclass")
+        self.assertEqual(scraper.classify_session("", "https://learn.masaischool.com/masterclass/llms"), "masterclass")
+        self.assertEqual(scraper.classify_session("Some other talk", "https://x/other"), "other")
+        self.assertEqual(scraper.category_label("im"), "IM Sessions")
+        self.assertEqual([c["key"] for c in scraper.SESSION_CATEGORIES], ["academic", "im", "masterclass"])
     def test_roadmap_mapping(self):
         m = map_summary_to_roadmap(SUMMARY)
         self.assertTrue(any(x["phase"] == "Generative AI and LLM Engineering" for x in m))
