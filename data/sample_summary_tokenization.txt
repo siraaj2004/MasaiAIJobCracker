@@ -1,0 +1,8 @@
+Tokenization is the process of splitting text into smaller units called tokens. An LLM does not read whole sentences directly, it reads tokens. Each token is mapped to a token ID from a fixed vocabulary. Encoding means converting text into a list of token IDs. Decoding means converting token IDs back into text. Tokenization helps the model handle new words by breaking them into subword pieces. The number of tokens decides the context length a model can process. Short words are usually one token, while long or rare words become several tokens. Tokenization is used in every LLM application, including chatbots, translation and code generation. Choosing a good tokenizer affects model speed, cost and accuracy.
+```python
+text = "I love learning AI"
+tokens = text.split()
+print(tokens)
+print(len(tokens))
+```
+The split method divides the string wherever there is a space. Each piece becomes one token in this simple example. Real LLM tokenizers learn pieces from large amounts of text instead of only splitting on spaces. Byte Pair Encoding is a popular algorithm that merges frequent character pairs into tokens. Token IDs are then converted into embeddings that the transformer can process. Attention works on these token embeddings to understand context.
