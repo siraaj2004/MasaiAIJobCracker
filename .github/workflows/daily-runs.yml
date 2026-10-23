@@ -1,0 +1,49 @@
+name: Masai Daily Runs
+
+# Runs 4x daily at 10:00, 11:00, 22:00, 23:00 IST.
+# GitHub cron is UTC; IST = UTC+5:30, so:
+#   10:00 IST = 04:30 UTC | 11:00 IST = 05:30 UTC
+#   22:00 IST = 16:30 UTC | 23:00 IST = 17:30 UTC
+on:
+  schedule:
+    - cron: "30 4 * * *"
+    - cron: "30 5 * * *"
+    - cron: "30 16 * * *"
+    - cron: "30 17 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  daily-run:
+    runs-on: ubuntu-latest
+    env:
+      SERVICE: https://masai-ai-job-cracker.onrender.com
+      APP_API_KEY: ${{ secrets.APP_API_KEY }}
+    steps:
+      - name: Wake service and check health
+        run: |
+          echo "## Masai daily run — $(date -u) UTC" >> "$GITHUB_STEP_SUMMARY"
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -s -o /tmp/health.json -w "%{http_code}" "$SERVICE/health" || true)
+            echo "health attempt $i: HTTP $code"
+            if [ "$code" = "200" ]; then break; fi
+            sleep 20
+          done
+          cat /tmp/health.json || true
+          echo '### /health' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat /tmp/health.json >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          if [ "$code" != "200" ]; then echo "Service did not return 200 on /health"; exit 1; fi
+
+      - name: Check Masai for new lectures
+        run: |
+          args=(-s -X POST "$SERVICE/lectures/check-masai" --max-time 600)
+          if [ -n "$APP_API_KEY" ]; then args+=(-H "X-API-Key: $APP_API_KEY"); fi
+          code=$(curl "${args[@]}" -o /tmp/check.json -w "%{http_code}" || true)
+          echo "check-masai: HTTP $code"
+          cat /tmp/check.json || true
+          echo '### /lectures/check-masai' >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          cat /tmp/check.json >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          if [ "$code" != "200" ]; then echo "check-masai did not return 200"; exit 1; fi
