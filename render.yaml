@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: masai-ai-job-cracker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: APP_API_KEY
+        sync: false
+      - key: DATABASE_PATH
+        value: data/app.db
+      - key: STORAGE_DIR
+        value: storage
+      - key: TTS_PROVIDER
+        value: gtts
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: STUDENT_EMAIL
+        sync: false

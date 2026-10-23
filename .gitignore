@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+data/*.db
+data/storage_state.json
+storage/
+*.mp4
+*.mp3
+node_modules/
+frontend/dist/
