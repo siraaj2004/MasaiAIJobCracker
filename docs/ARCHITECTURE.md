@@ -1,5 +1,5 @@
 # Architecture
-Masai Learn (authorized session) → scraper.py (AI Summary only, dedupe by hash)
+Masai Learn (authorized session) → scraper.py (AI Summary only, dedupe by hash; discovers ALL THREE session types — Academic Sessions, IM Sessions, MasterClasses — and stores the category as the lecture module)
 → db.py (SQLite; PostgreSQL-swappable) → lesson.py (9-part Telugu script)
 → video.py (gTTS Telugu audio + ffmpeg slides + SRT) → pdf_notes.py →
 quiz_gen.py (grounded questions, answers server-side) → mistake.py
