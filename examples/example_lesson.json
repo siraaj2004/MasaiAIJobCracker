@@ -1,0 +1,85 @@
+{
+ "title": "Tokenization",
+ "language": "te-mixed-en",
+ "parts": [
+  {
+   "part": 1,
+   "name": "Introduction",
+   "text": "Namaste! Ee roju manam 'Tokenization' gurinchi nerchukuntam. Bayapadakandi, chala simple ga cheptha."
+  },
+  {
+   "part": 2,
+   "name": "Fourth-class explanation",
+   "text": "Manam oka pedda chocolate ni chinna pieces ga break chestham kada? Alage LLM oka sentence ni chinna parts ga divide chesthundi. Aa parts ni tokens antaru."
+  },
+  {
+   "part": 3,
+   "name": "Real-life example",
+   "text": "Real life example: An LLM does not read whole sentences directly, it reads tokens."
+  },
+  {
+   "part": 4,
+   "name": "Technical definition (from summary)",
+   "text": "Tokenization is the process of splitting text into smaller units called tokens."
+  },
+  {
+   "part": 5,
+   "name": "Python code explanation",
+   "text": "Code summary lone undi, line by line ga explain chestha:\ntext = \"I love learning AI\"\ntokens = text.split()\nprint(tokens)\nprint(len(tokens))\n"
+  },
+  {
+   "part": 6,
+   "name": "Practical demonstration",
+   "text": "Input, execution, output step by step ga chudham. Summary facts: Tokenization is the process of splitting text into smaller units called tokens. An LLM does not read whole sentences directly, it reads tokens. Each token is mapped to a token ID from a fixed vocabulary."
+  },
+  {
+   "part": 7,
+   "name": "Interview preparation (additional, not from summary)",
+   "questions": [
+    "What is Tokenization? Interview lo simple English lo cheppandi.",
+    "Tokenization real project lo ekkada use chestaru?",
+    "Tokenization lo common mistake enti?"
+   ]
+  },
+  {
+   "part": 8,
+   "name": "Revision",
+   "text": "Important points: Tokenization is the process of; An LLM does not read whole; Each token is mapped to a token; ID from a fixed vocabulary; Encoding means converting text; IDs; Decoding means converting token; IDs back into text"
+  },
+  {
+   "part": 9,
+   "name": "Mini challenge",
+   "text": "Challenge: 'Tokenization' ni mee own words lo 3 lines lo rayandi, oka chinna Python example tho."
+  }
+ ],
+ "terms": [
+  "Tokenization is the process of",
+  "An LLM does not read whole",
+  "Each token is mapped to a token",
+  "ID from a fixed vocabulary",
+  "Encoding means converting text",
+  "IDs",
+  "Decoding means converting token",
+  "IDs back into text"
+ ],
+ "source_sentences": [
+  "Tokenization is the process of splitting text into smaller units called tokens.",
+  "An LLM does not read whole sentences directly, it reads tokens.",
+  "Each token is mapped to a token ID from a fixed vocabulary.",
+  "Encoding means converting text into a list of token IDs.",
+  "Decoding means converting token IDs back into text.",
+  "Tokenization helps the model handle new words by breaking them into subword pieces.",
+  "The number of tokens decides the context length a model can process.",
+  "Short words are usually one token, while long or rare words become several tokens.",
+  "Tokenization is used in every LLM application, including chatbots, translation and code generation.",
+  "Choosing a good tokenizer affects model speed, cost and accuracy.",
+  "```python text = \"I love learning AI\" tokens = text.split() print(tokens) print(len(tokens)) ``` The split method divides the string wherever there is a space.",
+  "Each piece becomes one token in this simple example.",
+  "Real LLM tokenizers learn pieces from large amounts of text instead of only splitting on spaces.",
+  "Byte Pair Encoding is a popular algorithm that merges frequent character pairs into tokens.",
+  "Token IDs are then converted into embeddings that the transformer can process.",
+  "Attention works on these token embeddings to understand context."
+ ],
+ "has_code_in_summary": true,
+ "checkpoint_question": "Interview Question: Tokenization ante enti? Pause chesi answer cheyyandi, tarvata continue cheddam."
+}

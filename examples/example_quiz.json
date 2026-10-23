@@ -1,0 +1,182 @@
+{
+ "title": "Tokenization",
+ "limitation": "Summary supports only 16 distinct grounded questions, not 20. No source material was invented to fill the gap.",
+ "questions": [
+  {
+   "id": 1,
+   "level": "beginner",
+   "question": "Fill in the blank (from the lesson summary): Tokenization is the process of _____ text into smaller units called tokens.",
+   "options": [
+    "Tokenization",
+    "process",
+    "splitting",
+    "text"
+   ]
+  },
+  {
+   "id": 2,
+   "level": "beginner",
+   "question": "Fill in the blank (from the lesson summary): An LLM does not read whole sentences directly, it _____ tokens.",
+   "options": [
+    "Tokenization",
+    "process",
+    "splitting",
+    "reads"
+   ]
+  },
+  {
+   "id": 3,
+   "level": "beginner",
+   "question": "Fill in the blank (from the lesson summary): _____ token is mapped to a token ID from a fixed vocabulary.",
+   "options": [
+    "Each",
+    "Tokenization",
+    "process",
+    "splitting"
+   ]
+  },
+  {
+   "id": 4,
+   "level": "beginner",
+   "question": "Fill in the blank (from the lesson summary): _____ means converting text into a list of token IDs.",
+   "options": [
+    "Tokenization",
+    "Encoding",
+    "process",
+    "splitting"
+   ]
+  },
+  {
+   "id": 5,
+   "level": "beginner",
+   "question": "Fill in the blank (from the lesson summary): Decoding _____ converting token IDs back into text.",
+   "options": [
+    "Tokenization",
+    "process",
+    "means",
+    "splitting"
+   ]
+  },
+  {
+   "id": 6,
+   "level": "conceptual",
+   "question": "Fill in the blank (from the lesson summary): Tokenization _____ the model handle new words by breaking them into subword pieces.",
+   "options": [
+    "Tokenization",
+    "process",
+    "splitting",
+    "helps"
+   ]
+  },
+  {
+   "id": 7,
+   "level": "conceptual",
+   "question": "Fill in the blank (from the lesson summary): The number of tokens decides the _____ length a model can process.",
+   "options": [
+    "context",
+    "Tokenization",
+    "process",
+    "splitting"
+   ]
+  },
+  {
+   "id": 8,
+   "level": "conceptual",
+   "question": "Fill in the blank (from the lesson summary): Short words are usually one token, while long or rare words become several _____.",
+   "options": [
+    "Tokenization",
+    "tokens",
+    "process",
+    "splitting"
+   ]
+  },
+  {
+   "id": 9,
+   "level": "conceptual",
+   "question": "Fill in the blank (from the lesson summary): Tokenization is used in every LLM _____, including chatbots, translation and code generation.",
+   "options": [
+    "Tokenization",
+    "process",
+    "application",
+    "splitting"
+   ]
+  },
+  {
+   "id": 10,
+   "level": "conceptual",
+   "question": "Fill in the blank (from the lesson summary): Choosing a good tokenizer _____ model speed, cost and accuracy.",
+   "options": [
+    "Tokenization",
+    "process",
+    "splitting",
+    "affects"
+   ]
+  },
+  {
+   "id": 11,
+   "level": "intermediate",
+   "question": "Fill in the blank (from the lesson summary): Each piece becomes one _____ in this simple example.",
+   "options": [
+    "Tokenization",
+    "token",
+    "process",
+    "splitting"
+   ]
+  },
+  {
+   "id": 12,
+   "level": "intermediate",
+   "question": "Fill in the blank (from the lesson summary): Real LLM tokenizers learn pieces from _____ amounts of text instead of only splitting on spaces.",
+   "options": [
+    "Tokenization",
+    "process",
+    "large",
+    "splitting"
+   ]
+  },
+  {
+   "id": 13,
+   "level": "intermediate",
+   "question": "Fill in the blank (from the lesson summary): Byte Pair Encoding is a popular algorithm that _____ frequent character pairs into tokens.",
+   "options": [
+    "Tokenization",
+    "process",
+    "splitting",
+    "merges"
+   ]
+  },
+  {
+   "id": 14,
+   "level": "intermediate",
+   "question": "Fill in the blank (from the lesson summary): Token IDs are then converted into _____ that the transformer can process.",
+   "options": [
+    "embeddings",
+    "Tokenization",
+    "process",
+    "splitting"
+   ]
+  },
+  {
+   "id": 15,
+   "level": "intermediate",
+   "question": "Fill in the blank (from the lesson summary): Attention works on these token embeddings to _____ context.",
+   "options": [
+    "Tokenization",
+    "understand",
+    "process",
+    "splitting"
+   ]
+  },
+  {
+   "id": 16,
+   "level": "code",
+   "question": "Ee code run ayithe output enti?\ntext = \"I love learning AI\"\ntokens = text.split()\nprint(tokens)\nprint(len(tokens))\n",
+   "options": [
+    "Code output is determined by execution",
+    "Error",
+    "No output",
+    "Infinite loop"
+   ]
+  }
+ ]
+}
