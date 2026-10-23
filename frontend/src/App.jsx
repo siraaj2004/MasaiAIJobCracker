@@ -43,6 +43,10 @@ export default function App() {
       <button onClick={() => alert("Hint: sum() anni numbers kaluputhundi")}>Hint</button></div>
       {codeOut && <pre>{codeOut.stdout || codeOut.error || codeOut.stderr}</pre>}
     </section>
+    <section><h2>Interview Practice — Basic first, then Subject-related</h2>
+      <p>Topics: Python, SQL, Mathematics, Machine Learning, Deep Learning, Generative AI, AI Agents, MLOps, Coding Interviews, HR. Prathi topic lo mundhu basic questions, tarvata subject questions, difficulty periguthu vasthundi. Answer ki score /10, missed points, sample answer vasthundi.</p>
+      <p>Start cheyyadaniki API: POST /interview/start/python (topic peru marchandi). Topics list: GET /interview/topics.</p>
+    </section>
     <section><h2>Video Lesson + Checkpoint</h2>
       <p>Video play chesthunna madhya lo pause chesi checkpoint interview question ki answer cheyyandi, tarvata continue cheyyandi. Videos open from the storage links in your email / lesson page.</p>
     </section>
