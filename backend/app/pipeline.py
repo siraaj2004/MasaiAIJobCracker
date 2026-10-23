@@ -2,7 +2,7 @@
 Quiz -> (email if configured). Each step records real status; failures are
 reported, never hidden, and failed steps stay retryable."""
 import os, json
-from . import lesson as lesson_mod, quiz_gen, video as video_mod, pdf_notes, email_service
+from . import lesson as lesson_mod, quiz_gen, video as video_mod, pdf_notes, email_service, quiz_html
 from .roadmap import map_summary_to_roadmap
 
 STORAGE = os.environ.get("STORAGE_DIR", "storage")
@@ -32,6 +32,11 @@ def process_lecture(db, lecture_id, make_video=True, send_mail=False, student_em
     out["steps"]["quiz"] = {"ok": True, "quiz_id": quiz_id, "count": len(quiz["questions"]),
                             "limitation": quiz["limitation"],
                             "quiz_link": "/quiz/%d" % quiz_id}
+    try:
+        h = quiz_html.write_quiz_html(db, lecture_id, os.path.join(folder, "quiz.html"))
+        if h: out["steps"]["quiz_html"] = {"ok": True, **h}
+    except Exception as e:
+        out["steps"]["quiz_html"] = {"ok": False, "error": str(e)[:200]}
     db.save_lesson(lecture_id, script, video_path, pdf_path)
     db.set_lecture_status(lecture_id, "processed")
     if send_mail:
