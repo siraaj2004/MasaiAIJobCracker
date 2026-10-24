@@ -1,5 +1,5 @@
 """Render ONE lecture's video with the Microsoft Edge NEURAL Telugu voice
-(te-IN-MohanNeural) for the current daily-delivery slot, and place it at
+(te-IN-ShrutiNeural, female) for the current daily-delivery slot, and place it at
 neural/lecture_<id>.mp4 in the repo.
 
 Why this exists: the daily Gmail packages (10 AM / 11 AM / 10 PM / 11 PM IST)
@@ -39,7 +39,7 @@ from app.db import DB               # noqa: E402
 from app import video as video_mod  # noqa: E402
 from app import lesson as lesson_mod  # noqa: E402
 
-VOICE = os.environ.get("TELUGU_VOICE", "te-IN-MohanNeural")
+VOICE = os.environ.get("TELUGU_VOICE", "te-IN-ShrutiNeural")
 EPOCH = datetime.date(2026, 10, 24)
 HOUR_TO_SLOT = {9: 0, 10: 1, 21: 2, 22: 3}   # this script runs 15 min early
 
