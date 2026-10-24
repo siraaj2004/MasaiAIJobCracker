@@ -42,7 +42,7 @@ is duplicated and nothing is silently lost.
 
 Stdlib only: no pip install is needed to run this script.
 """
-import os, sys, json, html, random, smtplib, datetime
+import os, sys, json, html, random, smtplib, datetime, re
 from email.message import EmailMessage
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -71,15 +71,103 @@ def ist_now():
     return datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=5, minutes=30)))
 
 
-def pick_slot_and_lecture():
+def _category(title):
+    t = (title or "").strip().lower()
+    if t.startswith("academic session"):
+        return "acad"
+    if t.startswith("im session"):
+        return "im"
+    if t.startswith("master"):
+        return "mc"
+    return "found"
+
+
+def _acad_num(title):
+    m = re.search(r"academic session\s+(\d+(?:\.\d+)?)", title or "", re.I)
+    return float(m.group(1)) if m else 9999.0
+
+
+def _im_num(title):
+    m = re.search(r"im session\s+(\d+)", title or "", re.I)
+    return int(m.group(1)) if m else 9999
+
+
+_MC_MATHS = ["numbers", "tables", "mathematics behind learning",
+             "probability", "vectors", "calculus"]
+
+
+def _mc_key(title):
+    t = (title or "").lower()
+    m = re.search(r"masterclass\s+(\d+)", t)
+    if m:
+        return (0, int(m.group(1)), "")
+    if "overview" in t:
+        return (1, 0, "")
+    for i, name in enumerate(_MC_MATHS):
+        if name in t:
+            return (2, i, "")
+    return (3, 0, t)
+
+
+_FOUND_ORDER = ["python foundations", "expressions", "loops", "lists"]
+
+
+def _found_key(title):
+    t = (title or "").lower()
+    for i, name in enumerate(_FOUND_ORDER):
+        if name in t:
+            return (i, "")
+    return (99, t)
+
+
+def effective_order(db, current_idx):
+    """Same rule as scripts/render_slot.py: base ORDERED list extended with
+    any lectures the DB gained since it was written (e.g. upcoming Module-3
+    Academics like A31/A32). A new lecture joins the END of its category
+    block; if that block already passed in the current cycle it goes right
+    after the current lecture, so a just-held class is sent promptly."""
+    blocks = {"acad": ORDERED[0:16], "im": ORDERED[16:30],
+              "mc": ORDERED[30:41], "found": ORDERED[41:45]}
+    block_end = {"acad": 15, "im": 29, "mc": 40, "found": 44}
+    known = set(ORDERED) | {1}
+    new_by_cat = {"acad": [], "im": [], "mc": [], "found": []}
+    for row in db.list_lectures():
+        lid = row["id"]
+        if lid in known:
+            continue
+        if not (row.get("summary") or "").strip():
+            continue
+        new_by_cat[_category(row["title"])].append(row)
+    new_by_cat["acad"].sort(key=lambda r: _acad_num(r["title"]))
+    new_by_cat["im"].sort(key=lambda r: _im_num(r["title"]))
+    new_by_cat["mc"].sort(key=lambda r: _mc_key(r["title"]))
+    new_by_cat["found"].sort(key=lambda r: _found_key(r["title"]))
+    pos = current_idx % len(ORDERED)
+    urgent = []
+    for cat in ("acad", "im", "mc", "found"):
+        items = [r["id"] for r in new_by_cat[cat]]
+        if not items:
+            continue
+        if pos > block_end[cat]:
+            urgent.extend(items)
+        else:
+            blocks[cat].extend(items)
+    order = blocks["acad"] + blocks["im"] + blocks["mc"] + blocks["found"]
+    if urgent:
+        order = order[:pos + 1] + urgent + order[pos + 1:]
+    return order
+
+
+def pick_slot_and_lecture(db):
     """Return (slot_number, lecture_id, days_since_epoch)."""
     if os.environ.get("LECTURE"):
         return None, int(os.environ["LECTURE"]), None
     now = ist_now()
     slot = int(os.environ["SLOT"]) if os.environ.get("SLOT") else HOUR_TO_SLOT[now.hour]
     days = (now.date() - EPOCH).days
-    lecture_id = ORDERED[(days * 4 + slot - 2) % len(ORDERED)]
-    return slot, lecture_id, days
+    idx = days * 4 + slot - 2
+    order = effective_order(db, idx)
+    return slot, order[idx % len(order)], days
 
 
 def build_interview_html(seed, out_path):
@@ -136,7 +224,8 @@ def main():
               "Until then the chat delivery keeps sending the packages.")
         return 0
 
-    slot, lecture_id, days = pick_slot_and_lecture()
+    db = DB(os.path.join("data", "app.db"))
+    slot, lecture_id, days = pick_slot_and_lecture(db)
     now = ist_now()
     if slot is None:
         slot = HOUR_TO_SLOT.get(now.hour, 0)
@@ -144,7 +233,6 @@ def main():
     date_str = now.strftime("%Y-%m-%d")
     seed = (days if days is not None else 0) * 4 + slot
 
-    db = DB(os.path.join("data", "app.db"))
     lec = db.get_lecture(lecture_id)
     if not lec:
         print("Lecture %d not found in data/app.db — nothing sent." % lecture_id)
