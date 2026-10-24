@@ -1,0 +1,56 @@
+name: Neural Daily Render
+
+# Renders the NEXT delivery slot's lecture video with the Microsoft Edge
+# neural Telugu voice (human-like), ~15 minutes before each Gmail package
+# slot (10 AM / 11 AM / 10 PM / 11 PM IST), and commits it to neural/ in this
+# repo so the delivery step can attach it. Free on a public repo.
+# Slot -> lecture mapping is deterministic and shared with the delivery
+# step: see scripts/render_slot.py.
+
+on:
+  schedule:
+    - cron: "15 4 * * *"    # 09:45 IST -> for the 10:00 AM package
+    - cron: "15 5 * * *"    # 10:45 IST -> for the 11:00 AM package
+    - cron: "15 16 * * *"   # 21:45 IST -> for the 10:00 PM package
+    - cron: "15 17 * * *"   # 22:45 IST -> for the 11:00 PM package
+  workflow_dispatch:
+    inputs:
+      lecture:
+        description: "Lecture id to render (blank = this slot's lecture)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          pip install -q -r requirements.txt
+
+      - name: Render this slot's lecture (neural voice)
+        env:
+          LECTURE: ${{ inputs.lecture }}
+        run: python scripts/render_slot.py
+
+      - name: Commit the rendered video
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add neural/
+          if git diff --cached --quiet; then
+            echo "No new video to commit."
+          else
+            git commit -m "Neural-voice video for daily package"
+            git push
+          fi
