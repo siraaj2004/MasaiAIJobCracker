@@ -26,11 +26,11 @@ def _gtts(text, mp3_path):
 
 def _edge_tts(text, mp3_path):
     """Microsoft Edge neural TTS — natural, human-like Telugu voices.
-    Voice via TELUGU_VOICE (default te-IN-MohanNeural, male;
-    te-IN-ShrutiNeural is the female voice). Raises on any failure so the
+    Voice via TELUGU_VOICE (default te-IN-ShrutiNeural, female;
+    te-IN-MohanNeural is the male voice). Raises on any failure so the
     caller can fall back to gTTS."""
     import sys
-    voice = os.environ.get("TELUGU_VOICE", "te-IN-MohanNeural")
+    voice = os.environ.get("TELUGU_VOICE", "te-IN-ShrutiNeural")
     r = subprocess.run([sys.executable, "-m", "edge_tts", "--voice", voice,
                         "--text", text, "--write-media", mp3_path],
                        capture_output=True, text=True, timeout=600)
