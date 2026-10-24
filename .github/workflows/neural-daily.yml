@@ -41,6 +41,7 @@ jobs:
       - name: Render this slot's lecture (neural voice)
         env:
           LECTURE: ${{ inputs.lecture }}
+          TELUGU_VOICE: te-IN-ShrutiNeural
         run: python scripts/render_slot.py
 
       - name: Commit the rendered video
