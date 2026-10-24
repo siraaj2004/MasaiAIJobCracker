@@ -1,0 +1,52 @@
+name: Daily Send
+
+# Sends the daily learning package by Gmail, FREE on this public repo, at the
+# four daily slots (10 AM / 11 AM / 10 PM / 11 PM IST).
+# The package is built by sender.py (stdlib only — no pip install needed):
+#   1. Telugu explainer video with slides/visualization, in the real
+#      human-like Edge neural voice — rendered 15 minutes earlier by the
+#      Neural Daily Render workflow and committed to neural/lecture_<id>.mp4
+#   2. Quiz from the AI Summary — Masai-format HTML (Objective MCQs +
+#      Descriptive), generated from the lecture's own summary
+#   3. AI Engineer interview questions — HTML quiz that changes every run
+#      (5 MCQs + 3 Descriptive + answer key), rotated over the question bank
+# Mistake-rectification videos go out with the next slot's package from the
+# chat delivery (quiz answers are sent in chat; see sender.py docstring).
+#
+# REQUIRED repository secrets (Settings -> Secrets and variables -> Actions):
+#   SENDER_EMAIL         — the Gmail address to send from and to
+#   SENDER_APP_PASSWORD  — a Google App Password for that account
+#     (Google Account -> Security -> 2-Step Verification ON -> App passwords)
+#     Never paste the password in chat or in any file.
+# If the secrets are not set, sender.py exits cleanly WITHOUT sending, and
+# the chat delivery keeps sending the packages — no duplicates, no gap.
+
+on:
+  schedule:
+    - cron: "30 4 * * *"    # 10:00 AM IST
+    - cron: "30 5 * * *"    # 11:00 AM IST
+    - cron: "30 16 * * *"   # 10:00 PM IST
+    - cron: "30 17 * * *"   # 11:00 PM IST
+  workflow_dispatch:
+    inputs:
+      lecture:
+        description: "Lecture id to send (blank = this slot's lecture)"
+        required: false
+        default: ""
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Send daily package
+        env:
+          SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+          SENDER_APP_PASSWORD: ${{ secrets.SENDER_APP_PASSWORD }}
+          LECTURE: ${{ inputs.lecture }}
+        run: python sender.py
