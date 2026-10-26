@@ -1,17 +1,28 @@
 name: Neural Voice Render
 
-# Manually triggered: re-renders lecture videos with the Microsoft Edge
-# NEURAL Telugu voice (te-IN-MohanNeural) on GitHub's runners, where the
-# voice server is reachable. The render script is neural-only: if the voice
-# server cannot be reached it stops and changes nothing, so a green run
-# means the neural voice was genuinely used.
-# Requires data/app.db in the repo (lecture summaries). Rendered MP4s are
-# uploaded as a downloadable artifact named "neural-voice-videos".
+# Renders ALL missing lecture videos with the Microsoft Edge NEURAL Telugu
+# voice (te-IN-MohanNeural, male, human-like) on GitHub's runners, where the
+# voice server is reachable, and COMMITS them to neural/ in this repo so the
+# daily delivery step can attach them. The delivery crons are NEURAL-ONLY
+# (user choice 2026-10-26): they never send a robotic local gTTS video.
+#
+# Runs ~15 minutes before each daily delivery slot (09:50 / 12:50 / 17:50 /
+# 21:50 IST), plus manual dispatch. The batch script skips lectures that
+# already have a neural video, so re-runs only fill gaps.
+# Requires data/app.db in the repo (lecture summaries).
+# The render script is neural-only: if the voice server cannot be reached
+# it stops and changes nothing, so a green run means the neural voice was
+# genuinely used.
 on:
+  schedule:
+    - cron: "5 4 * * *"    # 09:35 IST -> for the 10:00 delivery
+    - cron: "5 7 * * *"    # 12:35 IST -> for the 13:00 delivery
+    - cron: "5 12 * * *"   # 17:35 IST -> for the 18:00 delivery
+    - cron: "5 16 * * *"   # 21:35 IST -> for the 22:00 delivery
   workflow_dispatch:
     inputs:
       lecture:
-        description: "Lecture id to render, or 'all'"
+        description: "Lecture id to render, or 'all' (all = every missing lecture)"
         required: true
         default: "all"
 
@@ -19,6 +30,8 @@ jobs:
   render:
     runs-on: ubuntu-latest
     timeout-minutes: 330
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -36,25 +49,41 @@ jobs:
 
       - name: Install tools
         run: |
-          pip install edge-tts gtts
+          pip install -q -r requirements.txt
           ffmpeg -version | head -1 || (sudo apt-get update && sudo apt-get install -y ffmpeg)
 
-      - name: Re-render videos with the neural Telugu voice
+      - name: Render missing videos with the neural Telugu voice
+        env:
+          TELUGU_VOICE: te-IN-MohanNeural
         run: |
-          if [ "${{ inputs.lecture }}" = "all" ]; then
-            python scripts/rerender_neural.py
+          if [ "${{ inputs.lecture }}" = "all" ] || [ -z "${{ inputs.lecture }}" ]; then
+            python scripts/render_neural_batch.py
           else
             python scripts/rerender_neural.py --only "${{ inputs.lecture }}"
+            cp "storage/lecture_${{ inputs.lecture }}/lesson.mp4" "neural/lecture_${{ inputs.lecture }}.mp4" || true
           fi
 
-      - name: Upload rendered videos
+      - name: Commit neural videos to the repo
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          # NOTE: the repo .gitignore has "*.mp4", so a plain `git add neural/`
+          # silently skips the videos. Force-add so the rendered MP4s are committed.
+          git add -f neural/
+          if git diff --cached --quiet; then
+            echo "No new neural video to commit."
+          else
+            git commit -m "Neural-voice (Mohan) videos for daily delivery"
+            git push
+          fi
+
+      - name: Upload rendered videos as backup artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: neural-voice-videos
           path: |
-            storage/lecture_*/lesson.mp4
-            storage/lecture_*/lesson.srt
+            neural/lecture_*.mp4
           retention-days: 14
           compression-level: 0
           if-no-files-found: warn
